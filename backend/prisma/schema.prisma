@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String     @id @default(cuid())
+  username          String     @unique
+  email             String     @unique
+  passwordHash      String
+  avatar            String?
+  trustScore        Float      @default(3.0)
+  contributionCount Int        @default(0)
+  isVerified        Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  // Relations
+  reviews           Review[]
+  posts             Post[]
+  favorites         Favorite[]
+  ladiesDays        LadiesDay[]
+  votes             Vote[]
+  notificationSettings NotificationSettings?
+
+  @@map("users")
+}
+
+model Sauna {
+  id          String    @id @default(cuid())
+  name        String
+  address     String
+  latitude    Float
+  longitude   Float
+  phone       String?
+  website     String?
+  description String?
+  priceRange  String
+  rating      Float     @default(0)
+  reviewCount Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  facilities  Facility[]
+  ladiesDays  LadiesDay[]
+  reviews     Review[]
+  posts       Post[]
+  favorites   Favorite[]
+
+  @@map("saunas")
+}
+
+model LadiesDay {
+  id             String    @id @default(cuid())
+  saunaId        String
+  dayOfWeek      Int?      // 0=Sunday, 1=Monday, etc. null for specific dates
+  specificDate   DateTime? // For one-time events
+  startTime      String?
+  endTime        String?
+  isOfficial     Boolean   @default(false)
+  sourceType     SourceType
+  sourceUserId   String?
+  trustScore     Float     @default(0)
+  supportCount   Int       @default(0)
+  oppositionCount Int      @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  sauna          Sauna     @relation(fields: [saunaId], references: [id], onDelete: Cascade)
+  sourceUser     User?     @relation(fields: [sourceUserId], references: [id])
+  votes          Vote[]
+
+  @@map("ladies_days")
+}
+
+model Facility {
+  id          String      @id @default(cuid())
+  saunaId     String
+  name        String
+  category    FacilityCategory
+  temperature Int?
+  description String?
+  isWomenOnly Boolean     @default(false)
+
+  // Relations
+  sauna       Sauna       @relation(fields: [saunaId], references: [id], onDelete: Cascade)
+
+  @@map("facilities")
+}
+
+model Review {
+  id         String     @id @default(cuid())
+  saunaId    String
+  userId     String
+  rating     Int
+  title      String
+  content    String
+  visitDate  DateTime
+  visibility Visibility @default(PUBLIC)
+  likeCount  Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  sauna      Sauna      @relation(fields: [saunaId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Post {
+  id         String     @id @default(cuid())
+  saunaId    String
+  userId     String
+  content    String
+  imageUrl   String?
+  visibility Visibility @default(PUBLIC)
+  likeCount  Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  sauna      Sauna      @relation(fields: [saunaId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  saunaId   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sauna     Sauna    @relation(fields: [saunaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, saunaId])
+  @@map("favorites")
+}
+
+model Vote {
+  id           String   @id @default(cuid())
+  userId       String
+  ladiesDayId  String
+  voteType     VoteType
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ladiesDay    LadiesDay @relation(fields: [ladiesDayId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ladiesDayId])
+  @@map("votes")
+}
+
+model NotificationSettings {
+  userId              String               @id
+  ladiesDayReminder   Boolean              @default(true)
+  reminderTiming      ReminderTiming       @default(MORNING)
+  pushNotifications   Boolean              @default(true)
+  emailNotifications  Boolean              @default(false)
+
+  // Relations
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+// Enums
+enum SourceType {
+  OFFICIAL
+  USER
+}
+
+enum FacilityCategory {
+  SAUNA
+  BATH
+  AMENITY
+  OTHER
+}
+
+enum Visibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+enum VoteType {
+  SUPPORT
+  OPPOSE
+}
+
+enum ReminderTiming {
+  MORNING
+  EVENING
+  BOTH
+}
