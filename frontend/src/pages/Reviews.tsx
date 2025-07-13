@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star, MessageCircle, Camera, Lock, Globe, Users } from 'lucide-react';
+import { Star, MessageCircle, Camera, Lock, Globe } from 'lucide-react';
 
 export default function Reviews() {
   const [activeTab, setActiveTab] = useState<'reviews' | 'posts'>('reviews');

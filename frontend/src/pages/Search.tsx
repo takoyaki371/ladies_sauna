@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search as SearchIcon, MapPin, Thermometer, Clock } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Clock } from 'lucide-react';
 
 export default function Search() {
   const [searchQuery, setSearchQuery] = useState('');

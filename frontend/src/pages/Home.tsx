@@ -5,15 +5,7 @@ import { Link } from 'react-router-dom';
 
 export default function Home() {
   const { ladiesDays, isLoading, error } = useTodaysLadiesDays();
-  const { user, isAuthenticated } = useAuth();
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
-    return `${month}/${day}(${dayOfWeek})`;
-  };
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="p-4 space-y-6">
