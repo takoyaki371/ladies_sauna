@@ -1,140 +1,194 @@
+-- CreateEnum
+CREATE TYPE "SourceType" AS ENUM ('OFFICIAL', 'USER');
+
+-- CreateEnum
+CREATE TYPE "FacilityCategory" AS ENUM ('SAUNA', 'BATH', 'AMENITY', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "Visibility" AS ENUM ('PUBLIC', 'FRIENDS', 'PRIVATE');
+
+-- CreateEnum
+CREATE TYPE "VoteType" AS ENUM ('SUPPORT', 'OPPOSE');
+
+-- CreateEnum
+CREATE TYPE "ReminderTiming" AS ENUM ('MORNING', 'EVENING', 'BOTH');
+
 -- CreateTable
-CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "hashedPassword" TEXT NOT NULL,
+CREATE TABLE "users" (
+    "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
-    "profileImage" TEXT,
-    "trustScore" INTEGER NOT NULL DEFAULT 100,
-    "totalContributions" INTEGER NOT NULL DEFAULT 0,
+    "email" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
+    "avatar" TEXT,
+    "trustScore" DOUBLE PRECISION NOT NULL DEFAULT 3.0,
+    "contributionCount" INTEGER NOT NULL DEFAULT 0,
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Sauna" (
-    "id" SERIAL NOT NULL,
+CREATE TABLE "saunas" (
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
-    "prefecture" TEXT NOT NULL,
-    "city" TEXT NOT NULL,
-    "latitude" DOUBLE PRECISION,
-    "longitude" DOUBLE PRECISION,
+    "latitude" DOUBLE PRECISION NOT NULL,
+    "longitude" DOUBLE PRECISION NOT NULL,
     "phone" TEXT,
     "website" TEXT,
-    "operatingHours" TEXT,
-    "entryFee" INTEGER,
-    "averageRating" DOUBLE PRECISION DEFAULT 0,
-    "totalReviews" INTEGER NOT NULL DEFAULT 0,
+    "description" TEXT,
+    "priceRange" TEXT NOT NULL,
+    "rating" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "reviewCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Sauna_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "saunas_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "LadiesDay" (
-    "id" SERIAL NOT NULL,
-    "saunaId" INTEGER NOT NULL,
-    "dayOfWeek" INTEGER NOT NULL,
+CREATE TABLE "ladies_days" (
+    "id" TEXT NOT NULL,
+    "saunaId" TEXT NOT NULL,
+    "dayOfWeek" INTEGER,
+    "specificDate" TIMESTAMP(3),
     "startTime" TEXT,
     "endTime" TEXT,
-    "isAllDay" BOOLEAN NOT NULL DEFAULT false,
-    "notes" TEXT,
-    "reportedBy" INTEGER NOT NULL,
-    "supportVotes" INTEGER NOT NULL DEFAULT 0,
-    "opposeVotes" INTEGER NOT NULL DEFAULT 0,
-    "lastVerified" TIMESTAMP(3),
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "isOfficial" BOOLEAN NOT NULL DEFAULT false,
+    "sourceType" "SourceType" NOT NULL,
+    "sourceUserId" TEXT,
+    "trustScore" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "supportCount" INTEGER NOT NULL DEFAULT 0,
+    "oppositionCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "LadiesDay_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ladies_days_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Review" (
-    "id" SERIAL NOT NULL,
-    "saunaId" INTEGER NOT NULL,
-    "userId" INTEGER NOT NULL,
+CREATE TABLE "facilities" (
+    "id" TEXT NOT NULL,
+    "saunaId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "category" "FacilityCategory" NOT NULL,
+    "temperature" INTEGER,
+    "description" TEXT,
+    "isWomenOnly" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "facilities_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "reviews" (
+    "id" TEXT NOT NULL,
+    "saunaId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "rating" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "visitDate" TIMESTAMP(3),
-    "isAnonymous" BOOLEAN NOT NULL DEFAULT false,
-    "helpfulVotes" INTEGER NOT NULL DEFAULT 0,
+    "visitDate" TIMESTAMP(3) NOT NULL,
+    "visibility" "Visibility" NOT NULL DEFAULT 'PUBLIC',
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "reviews_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Vote" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "ladiesDayId" INTEGER NOT NULL,
-    "voteType" TEXT NOT NULL,
+CREATE TABLE "posts" (
+    "id" TEXT NOT NULL,
+    "saunaId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "imageUrl" TEXT,
+    "visibility" "Visibility" NOT NULL DEFAULT 'PUBLIC',
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "favorites" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "saunaId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Vote_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "favorites_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Facility" (
-    "id" SERIAL NOT NULL,
-    "saunaId" INTEGER NOT NULL,
-    "type" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "isAvailable" BOOLEAN NOT NULL DEFAULT true,
-    "notes" TEXT,
+CREATE TABLE "votes" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "ladiesDayId" TEXT NOT NULL,
+    "voteType" "VoteType" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Facility_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "votes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "notification_settings" (
+    "userId" TEXT NOT NULL,
+    "ladiesDayReminder" BOOLEAN NOT NULL DEFAULT true,
+    "reminderTiming" "ReminderTiming" NOT NULL DEFAULT 'MORNING',
+    "pushNotifications" BOOLEAN NOT NULL DEFAULT true,
+    "emailNotifications" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "notification_settings_pkey" PRIMARY KEY ("userId")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE INDEX "Sauna_prefecture_city_idx" ON "Sauna"("prefecture", "city");
+CREATE UNIQUE INDEX "favorites_userId_saunaId_key" ON "favorites"("userId", "saunaId");
 
 -- CreateIndex
-CREATE INDEX "LadiesDay_saunaId_dayOfWeek_idx" ON "LadiesDay"("saunaId", "dayOfWeek");
-
--- CreateIndex
-CREATE INDEX "Review_saunaId_idx" ON "Review"("saunaId");
-
--- CreateIndex
-CREATE INDEX "Review_userId_idx" ON "Review"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Vote_userId_ladiesDayId_key" ON "Vote"("userId", "ladiesDayId");
-
--- CreateIndex
-CREATE INDEX "Facility_saunaId_idx" ON "Facility"("saunaId");
+CREATE UNIQUE INDEX "votes_userId_ladiesDayId_key" ON "votes"("userId", "ladiesDayId");
 
 -- AddForeignKey
-ALTER TABLE "LadiesDay" ADD CONSTRAINT "LadiesDay_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "Sauna"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ladies_days" ADD CONSTRAINT "ladies_days_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "saunas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "LadiesDay" ADD CONSTRAINT "LadiesDay_reportedBy_fkey" FOREIGN KEY ("reportedBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ladies_days" ADD CONSTRAINT "ladies_days_sourceUserId_fkey" FOREIGN KEY ("sourceUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Review" ADD CONSTRAINT "Review_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "Sauna"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "facilities" ADD CONSTRAINT "facilities_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "saunas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "reviews" ADD CONSTRAINT "reviews_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "saunas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vote" ADD CONSTRAINT "Vote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "reviews" ADD CONSTRAINT "reviews_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Vote" ADD CONSTRAINT "Vote_ladiesDayId_fkey" FOREIGN KEY ("ladiesDayId") REFERENCES "LadiesDay"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "posts" ADD CONSTRAINT "posts_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "saunas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Facility" ADD CONSTRAINT "Facility_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "Sauna"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "posts" ADD CONSTRAINT "posts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "favorites" ADD CONSTRAINT "favorites_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "favorites" ADD CONSTRAINT "favorites_saunaId_fkey" FOREIGN KEY ("saunaId") REFERENCES "saunas"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "votes" ADD CONSTRAINT "votes_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "votes" ADD CONSTRAINT "votes_ladiesDayId_fkey" FOREIGN KEY ("ladiesDayId") REFERENCES "ladies_days"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "notification_settings" ADD CONSTRAINT "notification_settings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
