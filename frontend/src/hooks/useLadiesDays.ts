@@ -119,6 +119,7 @@ export const useLadiesDaysForSauna = (saunaId: string) => {
       const response = await ladiesDayService.createLadiesDay({
         saunaId,
         sourceType: 'USER',
+        isOfficial: data.isOfficial || false,
         ...data
       });
       

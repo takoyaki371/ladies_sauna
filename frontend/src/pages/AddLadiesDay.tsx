@@ -121,18 +121,18 @@ const AddLadiesDay: React.FC = () => {
 
     setLoading(true);
 
-    try {
-      // API投稿処理
-      const submitData = {
-        saunaId: id!,
-        dayOfWeek: formData.scheduleType === 'weekly' ? parseInt(formData.dayOfWeek) : null,
-        specificDate: formData.scheduleType === 'specific' ? formData.specificDate : null,
-        startTime: formData.isAllDay ? null : formData.startTime,
-        endTime: formData.isAllDay ? null : formData.endTime,
-        isOfficial: formData.sourceType === 'OFFICIAL',
-        sourceType: formData.sourceType
-      };
+    // API投稿処理用データ準備
+    const submitData = {
+      saunaId: id!,
+      dayOfWeek: formData.scheduleType === 'weekly' ? parseInt(formData.dayOfWeek) : null,
+      specificDate: formData.scheduleType === 'specific' ? formData.specificDate : null,
+      startTime: formData.isAllDay ? null : formData.startTime,
+      endTime: formData.isAllDay ? null : formData.endTime,
+      isOfficial: formData.sourceType === 'OFFICIAL',
+      sourceType: formData.sourceType
+    };
 
+    try {
       await ladiesDayService.createLadiesDay(submitData);
 
       // 投稿成功時はサウナ詳細ページに戻る
