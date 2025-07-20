@@ -22,7 +22,7 @@ export const getSaunas = async (req: AuthRequest, res: Response) => {
     let whereClause: any = {};
 
     // Search by name or address (temporarily disabled for debugging)
-    if (search && search.length > 0) {
+    if (search && typeof search === 'string' && search.length > 0) {
       // Simple search - just log for now
       console.log('Search term:', search);
       // For now, don't filter to see if basic API works
