@@ -40,8 +40,10 @@ async function main() {
   });
 
   // Create test ladies day
-  const ladiesDay = await prisma.ladiesDay.create({
-    data: {
+  const ladiesDay = await prisma.ladiesDay.upsert({
+    where: { id: 'test-ladies-day-id' },
+    update: {},
+    create: {
       id: 'test-ladies-day-id',
       saunaId: sauna.id,
       dayOfWeek: new Date().getDay(), // Today's day of week
