@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Info, CheckCircle } from 'lucide-react';
 import { ladiesDayService } from '../services/ladiesDay';
 import { saunaService } from '../services/sauna';
+import { useAuth } from '../hooks/useAuth';
 
 interface SaunaInfo {
   id: string;
@@ -13,6 +14,7 @@ interface SaunaInfo {
 const AddLadiesDay: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [sauna, setSauna] = useState<SaunaInfo | null>(null);
   const [loading, setLoading] = useState(false);
   
@@ -29,6 +31,13 @@ const AddLadiesDay: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 認証チェック
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   // 曜日の選択肢
   const daysOfWeek = [

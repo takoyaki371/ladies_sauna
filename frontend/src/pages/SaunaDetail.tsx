@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Globe, Clock, Star, Plus, Calendar } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 // サウナ詳細の型定義
 interface SaunaDetail {
@@ -48,6 +49,7 @@ interface SaunaDetail {
 const SaunaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [sauna, setSauna] = useState<SaunaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'ladies-days'>('overview');
@@ -133,10 +135,18 @@ const SaunaDetail: React.FC = () => {
   }, [id]);
 
   const handleWriteReview = () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     navigate(`/sauna/${id}/write-review`);
   };
 
   const handleAddLadiesDay = () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     navigate(`/sauna/${id}/add-ladies-day`);
   };
 
@@ -297,7 +307,7 @@ const SaunaDetail: React.FC = () => {
               className="w-full bg-pink-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-pink-700 flex items-center justify-center"
             >
               <Plus className="h-5 w-5 mr-2" />
-              レビューを投稿
+              {isAuthenticated ? 'レビューを投稿' : 'ログインしてレビューを投稿'}
             </button>
 
             {/* レビュー一覧 */}
@@ -349,7 +359,7 @@ const SaunaDetail: React.FC = () => {
               className="w-full bg-pink-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-pink-700 flex items-center justify-center"
             >
               <Plus className="h-5 w-5 mr-2" />
-              レディースデー情報を追加
+              {isAuthenticated ? 'レディースデー情報を追加' : 'ログインして情報を追加'}
             </button>
 
             {/* レディースデー一覧 */}

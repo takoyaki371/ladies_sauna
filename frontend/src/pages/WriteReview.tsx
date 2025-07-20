@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Calendar, Eye, EyeOff } from 'lucide-react';
 import { reviewService } from '../services/review';
 import { saunaService } from '../services/sauna';
+import { useAuth } from '../hooks/useAuth';
 
 interface SaunaInfo {
   id: string;
@@ -13,6 +14,7 @@ interface SaunaInfo {
 const WriteReview: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [sauna, setSauna] = useState<SaunaInfo | null>(null);
   const [loading, setLoading] = useState(false);
   
@@ -27,6 +29,13 @@ const WriteReview: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hoveredStar, setHoveredStar] = useState(0);
+
+  // 認証チェック
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   // サウナ情報を取得
   useEffect(() => {
