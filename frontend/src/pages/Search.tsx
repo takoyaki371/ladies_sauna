@@ -29,14 +29,14 @@ export default function Search() {
   // Mock search results
   const searchResults = [
     {
-      id: '1',
-      name: 'スカイスパYOKOHAMA',
-      location: '横浜市西区',
+      id: 'test-sauna-id',
+      name: 'テストサウナ',
+      location: '東京都渋谷区',
       rating: 4.5,
-      price: '2,750円',
+      price: '1000-2000円',
       hasLadiesDay: true,
       tags: ['ロウリュ', '外気浴', '女性専用エリア'],
-      nextLadiesDay: '毎週火曜日',
+      nextLadiesDay: '毎週日曜日',
     },
     {
       id: '2',

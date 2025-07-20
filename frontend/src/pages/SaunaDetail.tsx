@@ -64,7 +64,8 @@ const SaunaDetail: React.FC = () => {
       // APIからサウナ詳細を取得する処理
       // 現在はテストデータを使用
       setTimeout(() => {
-        setSauna({
+        // IDに応じて異なるデータを返す
+        const saunaData = id === 'test-sauna-id' ? {
           id: 'test-sauna-id',
           name: 'テストサウナ',
           address: '東京都渋谷区テスト1-1-1',
@@ -105,7 +106,27 @@ const SaunaDetail: React.FC = () => {
               user: { username: 'saunaUser1' }
             }
           ]
-        });
+        } : {
+          // 汎用サウナデータ
+          id: id,
+          name: `サウナ ${id}`,
+          address: '住所情報',
+          latitude: 35.6762,
+          longitude: 139.6503,
+          phone: '03-0000-0000',
+          website: 'https://example.com',
+          description: 'サウナの詳細情報。',
+          priceRange: '料金未設定',
+          rating: 3.5,
+          reviewCount: 0,
+          facilities: [
+            { id: '1', name: 'サウナ', category: 'SAUNA', isWomenOnly: false },
+          ],
+          ladiesDays: [],
+          reviews: []
+        };
+
+        setSauna(saunaData);
         setLoading(false);
       }, 1000);
     }
