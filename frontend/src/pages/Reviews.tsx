@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Star, MessageCircle, Camera, Lock, Globe } from 'lucide-react';
 
 export default function Reviews() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'reviews' | 'posts'>('reviews');
 
   // Mock data
@@ -68,7 +70,10 @@ export default function Reviews() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-lg font-semibold">マイレビュー</h1>
-        <button className="bg-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        <button 
+          onClick={() => navigate('/search')}
+          className="bg-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-pink-600"
+        >
           新規投稿
         </button>
       </div>

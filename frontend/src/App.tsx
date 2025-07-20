@@ -7,6 +7,9 @@ import Reviews from './pages/Reviews';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import SaunaDetail from './pages/SaunaDetail';
+import WriteReview from './pages/WriteReview';
+import AddLadiesDay from './pages/AddLadiesDay';
 
 function App() {
   return (
@@ -14,6 +17,9 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/sauna/:id/write-review" element={<WriteReview />} />
+        <Route path="/sauna/:id/add-ladies-day" element={<AddLadiesDay />} />
+        <Route path="/sauna/:id" element={<SaunaDetail />} />
         <Route path="/*" element={
           <Layout>
             <Routes>

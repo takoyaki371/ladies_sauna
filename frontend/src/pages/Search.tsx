@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search as SearchIcon, MapPin, Clock } from 'lucide-react';
 
 export default function Search() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
@@ -183,7 +185,10 @@ export default function Search() {
                 ))}
               </div>
               
-              <button className="w-full bg-pink-50 text-pink-600 py-2 rounded-lg text-sm font-medium">
+              <button 
+                onClick={() => navigate(`/sauna/${result.id}`)}
+                className="w-full bg-pink-50 text-pink-600 py-2 rounded-lg text-sm font-medium hover:bg-pink-100"
+              >
                 詳細を見る
               </button>
             </div>
