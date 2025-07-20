@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Globe, Clock, Users, Star, Plus, Calendar, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Globe, Clock, Star, Plus, Calendar } from 'lucide-react';
 
 // サウナ詳細の型定義
 interface SaunaDetail {
