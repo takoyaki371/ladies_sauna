@@ -13,7 +13,7 @@ async function main() {
       id: 'test-user-id',
       username: 'testuser',
       email: 'test@example.com',
-      passwordHash: '$2a$10$example', // placeholder hash
+      passwordHash: '$2b$10$dCF1m6QZAC121CiOiEyfD.MwWe/awfxWRKwTvgaXcTFScnHBDbC3i', // password123
       trustScore: 4.0,
       contributionCount: 5,
       isVerified: true,

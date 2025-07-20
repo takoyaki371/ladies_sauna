@@ -115,13 +115,20 @@ const WriteReview: React.FC = () => {
         visibility: formData.visibility
       };
 
+      console.log('Sending review data:', reviewData);
+      console.log('FormData:', formData);
+
       await reviewService.createReview(reviewData);
 
       // 投稿成功時はサウナ詳細ページに戻る
       navigate(`/sauna/${id}?tab=reviews`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('レビュー投稿エラー:', error);
-      setErrors({ submit: 'レビューの投稿に失敗しました。もう一度お試しください。' });
+      console.error('エラーレスポンス:', error.response?.data);
+      console.error('送信データ:', reviewData);
+      
+      const errorMessage = error.response?.data?.message || 'レビューの投稿に失敗しました。もう一度お試しください。';
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }

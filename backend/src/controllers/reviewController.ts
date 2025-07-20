@@ -16,9 +16,25 @@ export const createReview = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
 
     // Validation
+    console.log('Review creation data:', { saunaId, rating, title, content, visitDate, visibility });
+    
     if (!saunaId || !rating || !title || !content || !visitDate) {
+      console.log('Missing required fields:', {
+        saunaId: !!saunaId,
+        rating: !!rating,
+        title: !!title,
+        content: !!content,
+        visitDate: !!visitDate
+      });
       return res.status(400).json({ 
-        message: 'All required fields must be provided' 
+        message: 'All required fields must be provided',
+        missing: {
+          saunaId: !saunaId,
+          rating: !rating,
+          title: !title,
+          content: !content,
+          visitDate: !visitDate
+        }
       });
     }
 

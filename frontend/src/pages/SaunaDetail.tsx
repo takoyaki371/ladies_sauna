@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Phone, Globe, Clock, Star, Plus, Calendar } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { saunaService } from '../services/sauna';
+import { reviewService } from '../services/review';
+import { ladiesDayService } from '../services/ladiesDay';
 
 // サウナ詳細の型定義
 interface SaunaDetail {
@@ -13,9 +16,9 @@ interface SaunaDetail {
   phone?: string;
   website?: string;
   description?: string;
-  priceRange: string;
-  rating: number;
-  reviewCount: number;
+  priceRange?: string;
+  rating?: number;
+  reviewCount?: number;
   facilities: Array<{
     id: string;
     name: string;
@@ -40,7 +43,7 @@ interface SaunaDetail {
     content: string;
     visitDate: string;
     createdAt: string;
-    user: {
+    user?: {
       username: string;
     };
   }>;
@@ -49,10 +52,32 @@ interface SaunaDetail {
 const SaunaDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated } = useAuth();
   const [sauna, setSauna] = useState<SaunaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'ladies-days'>('overview');
+
+  // データ再取得用の関数
+  const refreshData = async () => {
+    if (!id) return;
+    
+    try {
+      const [reviewsData, ladiesDaysData] = await Promise.all([
+        reviewService.getSaunaReviews(id).catch(() => ({ reviews: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } })),
+        ladiesDayService.getLadiesDaysForSauna(id).catch(() => ({ ladiesDays: [] }))
+      ]);
+
+      setSauna(prev => prev ? {
+        ...prev,
+        reviews: reviewsData.reviews || [],
+        reviewCount: reviewsData.reviews?.length || 0,
+        ladiesDays: ladiesDaysData.ladiesDays || []
+      } : null);
+    } catch (error) {
+      console.error('データの再取得に失敗:', error);
+    }
+  };
 
   // 曜日名の変換
   const getDayName = (dayOfWeek: number) => {
@@ -60,78 +85,98 @@ const SaunaDetail: React.FC = () => {
     return days[dayOfWeek];
   };
 
-  // テストデータ（本格実装時はAPIから取得）
+  // URL query parametersを処理してタブを設定
   useEffect(() => {
-    if (id) {
-      // APIからサウナ詳細を取得する処理
-      // 現在はテストデータを使用
-      setTimeout(() => {
-        // IDに応じて異なるデータを返す
-        const saunaData = id === 'test-sauna-id' ? {
-          id: 'test-sauna-id',
-          name: 'テストサウナ',
-          address: '東京都渋谷区テスト1-1-1',
-          latitude: 35.6762,
-          longitude: 139.6503,
-          phone: '03-1234-5678',
-          website: 'https://example.com',
-          description: 'テスト用のサウナです。女性専用時間もあり、清潔で居心地の良い施設です。',
-          priceRange: '1000-2000円',
-          rating: 4.5,
-          reviewCount: 10,
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    if (tab === 'reviews' || tab === 'ladies-days') {
+      setActiveTab(tab);
+      // 投稿から戻ってきた場合はデータを再取得
+      refreshData();
+    }
+  }, [location.search, id]);
+
+  // APIからサウナ詳細、レビュー、レディースデーを取得
+  useEffect(() => {
+    const fetchSaunaData = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        // 並行してデータを取得
+        const [saunaData, reviewsData, ladiesDaysData] = await Promise.all([
+          // サウナ基本情報（フォールバック付き）
+          id === 'test-sauna-id' 
+            ? Promise.resolve({
+                id: 'test-sauna-id',
+                name: 'テストサウナ',
+                address: '東京都渋谷区テスト1-1-1',
+                latitude: 35.6762,
+                longitude: 139.6503,
+                phone: '03-1234-5678',
+                website: 'https://example.com',
+                description: 'テスト用のサウナです。女性専用時間もあり、清潔で居心地の良い施設です。',
+                priceRange: '1000-2000円',
+                rating: 4.5,
+                reviewCount: 0,
+                createdAt: '2025-07-20T00:00:00Z',
+                updatedAt: '2025-07-20T00:00:00Z'
+              })
+            : saunaService.getSauna(id).catch(() => ({
+                id: id,
+                name: `サウナ ${id}`,
+                address: '住所情報',
+                latitude: 35.6762,
+                longitude: 139.6503,
+                priceRange: '料金未設定',
+                rating: 3.5,
+                reviewCount: 0,
+                createdAt: '2025-07-20T00:00:00Z',
+                updatedAt: '2025-07-20T00:00:00Z'
+              })),
+          
+          // レビューデータ
+          reviewService.getSaunaReviews(id).catch(() => ({ reviews: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } })),
+          
+          // レディースデーデータ
+          ladiesDayService.getLadiesDaysForSauna(id).catch(() => ({ ladiesDays: [] }))
+        ]);
+
+        // データを統合
+        const combinedData = {
+          ...saunaData,
           facilities: [
             { id: '1', name: 'ドライサウナ', category: 'SAUNA', isWomenOnly: false },
             { id: '2', name: '水風呂', category: 'BATH', isWomenOnly: false },
             { id: '3', name: '外気浴エリア', category: 'AMENITY', isWomenOnly: false },
           ],
-          ladiesDays: [
-            {
-              id: 'test-ladies-day-id',
-              dayOfWeek: 0,
-              specificDate: null,
-              startTime: '10:00',
-              endTime: '16:00',
-              isOfficial: true,
-              trustScore: 4.5,
-              supportCount: 8,
-              oppositionCount: 1,
-            }
-          ],
-          reviews: [
-            {
-              id: '1',
-              rating: 5,
-              title: '最高のサウナ体験',
-              content: '設備が充実していて、女性専用時間もあるので安心して利用できます。',
-              visitDate: '2025-07-15',
-              createdAt: '2025-07-16T10:00:00Z',
-              user: { username: 'saunaUser1' }
-            }
-          ]
-        } : {
-          // 汎用サウナデータ
+          reviews: reviewsData.reviews || [],
+          ladiesDays: ladiesDaysData.ladiesDays || []
+        };
+
+        setSauna(combinedData);
+      } catch (error) {
+        console.error('サウナデータの取得に失敗:', error);
+        // エラー時はフォールバックデータを使用
+        setSauna({
           id: id,
           name: `サウナ ${id}`,
           address: '住所情報',
           latitude: 35.6762,
           longitude: 139.6503,
-          phone: '03-0000-0000',
-          website: 'https://example.com',
-          description: 'サウナの詳細情報。',
           priceRange: '料金未設定',
           rating: 3.5,
           reviewCount: 0,
-          facilities: [
-            { id: '1', name: 'サウナ', category: 'SAUNA', isWomenOnly: false },
-          ],
-          ladiesDays: [],
-          reviews: []
-        };
-
-        setSauna(saunaData);
+          facilities: [{ id: '1', name: 'サウナ', category: 'SAUNA', isWomenOnly: false }],
+          reviews: [],
+          ladiesDays: []
+        });
+      } finally {
         setLoading(false);
-      }, 1000);
-    }
+      }
+    };
+
+    fetchSaunaData();
   }, [id]);
 
   const handleWriteReview = () => {
@@ -189,10 +234,10 @@ const SaunaDetail: React.FC = () => {
           <div className="flex items-center mt-2">
             <div className="flex items-center">
               <Star className="h-4 w-4 text-yellow-400 fill-current" />
-              <span className="ml-1 text-sm font-medium">{sauna.rating}</span>
-              <span className="ml-1 text-sm text-gray-500">({sauna.reviewCount}件)</span>
+              <span className="ml-1 text-sm font-medium">{sauna.rating || 0}</span>
+              <span className="ml-1 text-sm text-gray-500">({sauna.reviewCount || 0}件)</span>
             </div>
-            <span className="ml-4 text-sm text-gray-600">{sauna.priceRange}</span>
+            <span className="ml-4 text-sm text-gray-600">{sauna.priceRange || '料金未設定'}</span>
           </div>
         </div>
       </div>
@@ -329,7 +374,7 @@ const SaunaDetail: React.FC = () => {
                             />
                           ))}
                         </div>
-                        <span className="ml-2 text-sm font-medium">{review.user.username}</span>
+                        <span className="ml-2 text-sm font-medium">{review.user?.username || '匿名ユーザー'}</span>
                       </div>
                       <span className="text-xs text-gray-500">
                         {new Date(review.createdAt).toLocaleDateString()}
