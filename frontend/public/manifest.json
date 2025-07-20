@@ -2,13 +2,13 @@
   "name": "Ladies Sauna",
   "short_name": "Ladies Sauna",
   "description": "女性向けサウナ検索・レビューアプリ",
-  "start_url": "/ladies_sauna/",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ec4899",
   "icons": [
     {
-      "src": "/ladies_sauna/vite.svg",
+      "src": "/vite.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
