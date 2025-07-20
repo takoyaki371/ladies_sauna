@@ -137,9 +137,13 @@ const AddLadiesDay: React.FC = () => {
 
       // 投稿成功時はサウナ詳細ページに戻る
       navigate(`/sauna/${id}?tab=ladies-days`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('レディースデー投稿エラー:', error);
-      setErrors({ submit: 'レディースデー情報の追加に失敗しました。もう一度お試しください。' });
+      console.error('エラーレスポンス:', error.response?.data);
+      console.error('送信データ:', submitData);
+      
+      const errorMessage = error.response?.data?.message || 'レディースデー情報の追加に失敗しました。もう一度お試しください。';
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }
