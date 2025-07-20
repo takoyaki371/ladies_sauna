@@ -2,7 +2,7 @@ services:
   - type: web
     name: ladies-sauna-api
     env: node
-    buildCommand: npm install && npx prisma generate && npm run build
+    buildCommand: npm install && npx prisma generate
     startCommand: npx prisma migrate deploy && npm start
     healthCheckPath: /health
     envVars:
