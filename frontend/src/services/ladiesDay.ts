@@ -30,6 +30,16 @@ export interface LadiesDayWithSauna {
   };
 }
 
+export interface CreateLadiesDayData {
+  saunaId: string;
+  dayOfWeek?: number | null;
+  specificDate?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  isOfficial: boolean;
+  sourceType: 'USER' | 'OFFICIAL';
+}
+
 export const ladiesDayService = {
   async getTodaysLadiesDays() {
     const response = await api.get('/ladies-days/today');
@@ -45,7 +55,7 @@ export const ladiesDayService = {
     return this.getLadiesDays({ saunaId });
   },
 
-  async createLadiesDay(data: any) {
+  async createLadiesDay(data: CreateLadiesDayData) {
     const response = await api.post('/ladies-days', data);
     return response.data;
   },

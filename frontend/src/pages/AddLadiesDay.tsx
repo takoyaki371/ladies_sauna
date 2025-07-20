@@ -125,10 +125,10 @@ const AddLadiesDay: React.FC = () => {
       // API投稿処理
       const submitData = {
         saunaId: id!,
-        dayOfWeek: formData.scheduleType === 'weekly' ? parseInt(formData.dayOfWeek) : undefined,
-        specificDate: formData.scheduleType === 'specific' ? formData.specificDate : undefined,
-        startTime: formData.isAllDay ? undefined : formData.startTime,
-        endTime: formData.isAllDay ? undefined : formData.endTime,
+        dayOfWeek: formData.scheduleType === 'weekly' ? parseInt(formData.dayOfWeek) : null,
+        specificDate: formData.scheduleType === 'specific' ? formData.specificDate : null,
+        startTime: formData.isAllDay ? null : formData.startTime,
+        endTime: formData.isAllDay ? null : formData.endTime,
         isOfficial: formData.sourceType === 'OFFICIAL',
         sourceType: formData.sourceType
       };
