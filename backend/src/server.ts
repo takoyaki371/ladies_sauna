@@ -44,6 +44,38 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Database test endpoint
+app.get('/db-test', async (req, res) => {
+  try {
+    const { prisma } = await import('./lib/prisma');
+    
+    // Test basic connection
+    await prisma.$connect();
+    
+    // Count records in each table
+    const userCount = await prisma.user.count();
+    const saunaCount = await prisma.sauna.count();
+    const ladiesDayCount = await prisma.ladiesDay.count();
+    
+    res.status(200).json({
+      status: 'Database OK',
+      counts: {
+        users: userCount,
+        saunas: saunaCount,
+        ladiesDays: ladiesDayCount
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Database test error:', error);
+    res.status(500).json({
+      status: 'Database Error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // API routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/saunas', require('./routes/saunas'));
