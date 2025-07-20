@@ -17,13 +17,19 @@ export const createLadiesDay = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
 
     // Validation
-    if (!saunaId || sourceType !== 'USER') {
+    if (!saunaId) {
       return res.status(400).json({ 
-        message: 'Sauna ID and source type are required' 
+        message: 'Sauna ID is required' 
       });
     }
 
-    if (!dayOfWeek && !specificDate) {
+    if (!['USER', 'OFFICIAL'].includes(sourceType)) {
+      return res.status(400).json({ 
+        message: 'Valid source type is required' 
+      });
+    }
+
+    if (dayOfWeek === undefined && !specificDate) {
       return res.status(400).json({ 
         message: 'Either dayOfWeek or specificDate must be provided' 
       });
@@ -57,12 +63,12 @@ export const createLadiesDay = async (req: AuthRequest, res: Response) => {
     const ladiesDay = await prisma.ladiesDay.create({
       data: {
         saunaId,
-        dayOfWeek: dayOfWeek || null,
+        dayOfWeek: dayOfWeek !== undefined ? dayOfWeek : null,
         specificDate: specificDate ? new Date(specificDate) : null,
         startTime,
         endTime,
         isOfficial: isOfficial || false,
-        sourceType: 'USER',
+        sourceType: sourceType,
         sourceUserId: userId,
         trustScore: req.user!.trustScore
       },
