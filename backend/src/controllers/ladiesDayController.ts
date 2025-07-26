@@ -17,6 +17,8 @@ export const createLadiesDay = async (req: AuthRequest, res: Response) => {
     const userId = req.user!.id;
 
     // Validation
+    console.log('Ladies day creation data:', { saunaId, dayOfWeek, specificDate, startTime, endTime, isOfficial, sourceType, userId });
+    
     if (!saunaId) {
       return res.status(400).json({ 
         message: 'Sauna ID is required' 
@@ -45,18 +47,26 @@ export const createLadiesDay = async (req: AuthRequest, res: Response) => {
     }
 
     // Check for existing similar entries
+    const searchCriteria = {
+      saunaId,
+      dayOfWeek: dayOfWeek || null,
+      specificDate: specificDate ? new Date(specificDate) : null,
+      sourceUserId: userId
+    };
+    
+    console.log('Checking for duplicate with criteria:', searchCriteria);
+    
     const existingEntry = await prisma.ladiesDay.findFirst({
-      where: {
-        saunaId,
-        dayOfWeek: dayOfWeek || null,
-        specificDate: specificDate ? new Date(specificDate) : null,
-        sourceUserId: userId
-      }
+      where: searchCriteria
     });
+    
+    console.log('Existing entry found:', !!existingEntry, existingEntry?.id);
 
     if (existingEntry) {
       return res.status(400).json({ 
-        message: 'You have already posted this ladies day information' 
+        message: 'You have already posted this ladies day information',
+        duplicateId: existingEntry.id,
+        details: 'この日付・曜日の情報は既に投稿済みです。異なる日付または時間帯で投稿してください。'
       });
     }
 
