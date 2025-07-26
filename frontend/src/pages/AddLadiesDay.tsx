@@ -142,7 +142,7 @@ const AddLadiesDay: React.FC = () => {
       console.error('エラーレスポンス:', error.response?.data);
       console.error('送信データ:', submitData);
       
-      const errorMessage = error.response?.data?.message || 'レディースデー情報の追加に失敗しました。もう一度お試しください。';
+      const errorMessage = error.response?.data?.details || error.response?.data?.message || 'レディースデー情報の追加に失敗しました。もう一度お試しください。';
       setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
